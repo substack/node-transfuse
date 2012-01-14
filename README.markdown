@@ -66,6 +66,16 @@ $ echo '[{"a":3},{"b":5},{"a":10,"b":3},{"b":55,"c":6}]' | node example/async.js
 ]
 ```
 
+custom parsing and stringification
+----------------------------------
+
+see [JSONStream](https://github.com/dominictarr/JSONStream) for more details
+
+transfuse(['rows', /./, 'doc'], function(doc, map) {
+  doc.pizza = "tacos"
+  map(doc)
+}, JSONStream.stringify("{\"docs\":[\n", "\n,\n", "\n]}\n"));
+
 methods
 =======
 
