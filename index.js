@@ -3,17 +3,17 @@ var Stream = require('stream').Stream;
 var es = require('event-stream');
 var vm = require('vm');
 
-var transfuse = module.exports = function (keyPath, fn, stringify) {
+var transfuse = module.exports = function (keyPath, fn, stringify, fnCtx) {
     if (typeof keyPath === 'function') {
         fn = keyPath;
         keyPath = [ /./ ];
     }
     
     if (typeof fn === 'function' && fn.length === 1) {
-        return transfuse.sync(keyPath, fn, stringify);
+        return transfuse.sync(keyPath, fn, stringify, fnCtx);
     }
     else {
-        return transfuse.async(keyPath, fn, stringify);
+        return transfuse.async(keyPath, fn, stringify, fnCtx);
     }
 };
 
@@ -26,7 +26,9 @@ transfuse.sync = transform(function (fn, doc, map) {
 });
 
 function transform (cb) {
-    return function (keyPath, fn, stringify) {
+    return function (keyPath, fn, stringify, fnCtx) {
+        if (fnCtx === undefined) fnCtx = {}
+        
         if (fn === undefined) {
             fn = keyPath;
             keyPath = undefined;
@@ -34,7 +36,7 @@ function transform (cb) {
         if (!keyPath) keyPath = [ /./ ];
         
         if (typeof fn !== 'function') {
-            var fn_ = vm.runInNewContext('(' + fn.toString() + ')', {});
+            var fn_ = vm.runInNewContext('(' + fn.toString() + ')', fnCtx);
             return typeof fn_ === 'function'
                 ? transfuse(keyPath, fn_, stringify)
                 : undefined
